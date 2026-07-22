@@ -1,0 +1,619 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #0f1420;
+  color: #e6ebf5;
+  font-family: system-ui, "Segoe UI", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+  font-size: 14px;
+}
+
+main {
+  padding: 20px 24px 48px;
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #24304a;
+  padding-bottom: 12px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.sub {
+  margin: 4px 0 0;
+  color: #8fa0bf;
+  font-size: 13px;
+}
+
+.meta {
+  text-align: right;
+}
+
+.meta p {
+  margin: 2px 0;
+  font-size: 13px;
+  color: #b9c5db;
+}
+
+.dim {
+  color: #6f7f9c !important;
+  font-size: 12px !important;
+}
+
+.refresh {
+  margin-top: 6px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid #3d6fa8;
+  background: #2b6cb0;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.refresh:disabled {
+  background: #24405e;
+  border-color: #2f4166;
+  color: #9fb0cc;
+  cursor: default;
+}
+
+/* 凡例 */
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 14px 0 12px;
+  color: #8fa0bf;
+  font-size: 12px;
+}
+
+.swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  vertical-align: middle;
+}
+
+.swatch + .swatch,
+.legend .swatch:not(:first-child) {
+  margin-left: 10px;
+}
+
+/* 曜日タブ */
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.tab {
+  min-width: 42px;
+  padding: 7px 0;
+  border-radius: 6px;
+  border: 1px solid #2f4166;
+  background: #131a2a;
+  color: #b9c5db;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.tab:hover {
+  background: #1a2438;
+}
+
+.tab.active {
+  background: #2b6cb0;
+  border-color: #3d6fa8;
+  color: #fff;
+  font-weight: 600;
+}
+
+.tabnote {
+  margin-left: 10px;
+  color: #8fa0bf;
+  font-size: 12px;
+}
+
+.empty {
+  color: #8fa0bf;
+  font-size: 13px;
+}
+
+/* 講師×時間のマトリクス */
+.scroll {
+  overflow-x: auto;
+  border: 1px solid #24304a;
+  border-radius: 8px;
+}
+
+table.matrix {
+  border-collapse: collapse;
+  width: max-content;
+  min-width: 100%;
+}
+
+table.matrix th,
+table.matrix td {
+  padding: 0;
+}
+
+table.matrix thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #161e30;
+  color: #9fb0cc;
+  font-size: 13px;
+  font-weight: 500;
+  height: 30px;
+  border-bottom: 1px solid #2b3752;
+}
+
+.namecol {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  width: 132px;
+  min-width: 132px;
+  padding: 0 10px !important;
+  text-align: left;
+  white-space: nowrap;
+  background: #131a2a;
+  color: #dfe7f5;
+  font-size: 15px;
+  font-weight: 500;
+  border-right: 1px solid #2f4166;
+}
+
+thead .namecol {
+  z-index: 4;
+  color: #9fb0cc;
+  font-size: 13px;
+}
+
+table.matrix tbody tr:nth-child(odd) .namecol {
+  background: #151d2f;
+}
+
+table.matrix td {
+  width: 34px;
+  min-width: 34px;
+  height: 38px;
+  border-bottom: 1px solid #1c2437;
+}
+
+td.edge,
+th.hour {
+  border-left: 1px solid #2b3752;
+}
+
+td.free {
+  background: transparent;
+  cursor: pointer;
+  text-align: center;
+  font-size: 17px;
+  line-height: 1;
+  user-select: none;
+}
+
+/* 印が付いた枠は hover で色を消さない */
+table.matrix tbody tr:hover td.free:not(.ng):not(.ok) {
+  background: #141c2c;
+}
+
+/* 手で付けた印: ×=入れない / 〇=入れる */
+td.free.ng {
+  background: #3a2029;
+  color: #ff8f8f;
+}
+
+td.free.ok {
+  background: #172c24;
+  color: #79d3a6;
+}
+
+td.busy {
+  background: #2f6fd0;
+}
+
+td.busy.closing {
+  background: #d08a2f;
+}
+
+/* 体験は closing より後に置いて色を優先させる */
+td.busy.trial {
+  background: #3f9d70;
+}
+
+.swatch.busy {
+  background: #2f6fd0;
+}
+
+.swatch.closing {
+  background: #d08a2f;
+}
+
+.swatch.trial {
+  background: #3f9d70;
+}
+
+.swatch.free {
+  background: #131a2a;
+  border: 1px solid #2f4166;
+}
+
+.swatch.ng,
+.swatch.ok {
+  width: auto;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  line-height: 16px;
+  text-align: center;
+  font-size: 11px;
+}
+
+.swatch.ng {
+  background: #3a2029;
+  color: #ff8f8f;
+}
+
+.swatch.ok {
+  background: #172c24;
+  color: #79d3a6;
+}
+
+.note {
+  margin-left: 10px;
+  color: #6f7f9c;
+}
+
+/* 手で足した講師の行 */
+.namecol .tname {
+  vertical-align: middle;
+}
+
+tr.extrarow .namecol {
+  color: #b9c5db;
+  font-style: italic;
+}
+
+tr.extrarow td.free {
+  background: #10192b;
+}
+
+table.matrix .divider {
+  border-top: 2px solid #3d5a8a;
+}
+
+/* 足した行の名前は長押しで外す。押し間違い防止のため即削除はしない */
+tr.extrarow .namecol {
+  cursor: pointer;
+  user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+}
+
+tr.extrarow .namecol.pressing {
+  background: #2c2036;
+  color: #ffd0a0;
+}
+
+/* 外すかどうかの確認 */
+.confirm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #7a4050;
+  background: #2c1a22;
+  color: #ffd7d7;
+  font-size: 14px;
+}
+
+.confirm .danger {
+  padding: 7px 16px;
+  border-radius: 6px;
+  border: 1px solid #a04a5c;
+  background: #8c3446;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.confirm .cancel {
+  padding: 7px 16px;
+  border-radius: 6px;
+  border: 1px solid #2f4166;
+  background: #131a2a;
+  color: #b9c5db;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.hint {
+  margin: 12px 0 0;
+  color: #6f7f9c;
+  font-size: 12px;
+}
+
+/* 講師を足す欄 */
+.addrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  color: #8fa0bf;
+  font-size: 13px;
+}
+
+.addrow select {
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1px solid #2f4166;
+  background: #131a2a;
+  color: #e6ebf5;
+  font-size: 14px;
+  max-width: 200px;
+}
+
+.addrow select:disabled {
+  color: #6f7f9c;
+}
+
+.add {
+  padding: 7px 16px;
+  border-radius: 6px;
+  border: 1px solid #3d6fa8;
+  background: #2b6cb0;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.add:disabled {
+  background: #24405e;
+  border-color: #2f4166;
+  color: #9fb0cc;
+  cursor: default;
+}
+
+/* 生徒の希望から探す */
+.matchbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.match {
+  margin-bottom: 14px;
+  padding: 14px 16px;
+  border: 1px solid #2f4166;
+  border-radius: 8px;
+  background: #131a2a;
+}
+
+.matchhead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.matchhead .cancel {
+  margin-left: 6px;
+}
+
+.field {
+  margin-bottom: 12px;
+}
+
+.field.row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.field label {
+  display: block;
+}
+
+.label {
+  display: block;
+  margin-bottom: 5px;
+  color: #8fa0bf;
+  font-size: 12px;
+}
+
+.match select {
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1px solid #2f4166;
+  background: #0f1420;
+  color: #e6ebf5;
+  font-size: 14px;
+}
+
+.field label.check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #b9c5db;
+  font-size: 13px;
+  padding-bottom: 7px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  padding: 5px 10px;
+  border-radius: 14px;
+  border: 1px solid #2f4166;
+  background: #0f1420;
+  color: #b9c5db;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.chip:hover {
+  background: #1a2438;
+}
+
+.chip.on {
+  background: #2b6cb0;
+  border-color: #3d6fa8;
+  color: #fff;
+  font-weight: 600;
+}
+
+.timerow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+/* 候補リスト */
+.result {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #24304a;
+}
+
+.resulthead {
+  margin: 0 0 8px;
+  font-size: 14px;
+}
+
+.cands {
+  margin: 0;
+  padding-left: 22px;
+}
+
+.cands li {
+  padding: 4px 0;
+  line-height: 1.7;
+}
+
+.cname {
+  font-weight: 600;
+  margin-right: 10px;
+}
+
+.cmeta {
+  color: #8fa0bf;
+  font-size: 12px;
+  margin-right: 8px;
+}
+
+.badge {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 1px 7px;
+  border-radius: 10px;
+  border: 1px solid #3d6fa8;
+  color: #9fc4ef;
+  font-size: 11px;
+}
+
+.badge.ok {
+  border-color: #3f7a52;
+  color: #8fd6a4;
+}
+
+.slot {
+  margin-right: 6px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  border: 1px solid #2f4166;
+  background: #0f1420;
+  color: #e6ebf5;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.slot:hover {
+  background: #1a2438;
+}
+
+/* ログイン */
+.login {
+  max-width: 320px;
+  margin: 18vh auto 0;
+  text-align: center;
+}
+
+.login h1 {
+  font-size: 20px;
+}
+
+.login form {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.login input {
+  flex: 1;
+  padding: 9px 11px;
+  border-radius: 6px;
+  border: 1px solid #2f4166;
+  background: #131a2a;
+  color: #e6ebf5;
+  font-size: 14px;
+}
+
+.login button {
+  padding: 9px 16px;
+  border-radius: 6px;
+  border: 1px solid #3d6fa8;
+  background: #2b6cb0;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.error {
+  color: #ff9a9a;
+  font-size: 13px;
+  margin-top: 14px;
+}
+
+/* スマホ: 余白を詰めて表に幅を回す */
+@media (max-width: 600px) {
+  main {
+    padding: 14px 10px 32px;
+  }
+
+  .namecol {
+    width: 108px;
+    min-width: 108px;
+    padding: 0 8px !important;
+  }
+}
