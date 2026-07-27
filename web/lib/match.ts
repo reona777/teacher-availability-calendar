@@ -3,7 +3,14 @@
  * 判定はここに閉じて、Salesforce I/O も画面も持ち込まない（テストしやすくするため）。
  */
 import { extraTeachersOnWeekday, type Extras } from "./extra";
-import { STEP_MINUTES, minutesToTime, occupiedSlots, timeToMinutes, type Cell } from "./grid";
+import {
+  STEP_MINUTES,
+  WEEKDAYS,
+  minutesToTime,
+  occupiedSlots,
+  timeToMinutes,
+  type Cell,
+} from "./grid";
 import { markKey, type Marks } from "./marks";
 import type { Bunri, Profiles } from "./profile";
 
@@ -35,6 +42,30 @@ export const EMPTY_WISH: Wish = {
   lessonMinutes: 60,
   excludeNg: true,
 };
+
+/**
+ * 曜日をまとめて選んだときに足す希望を作る（「平日の18〜22時」を1回で入れるため）。
+ * 足したあとは1件ずつの希望なので、個別に直すのも消すのも今までどおりできる。
+ */
+export function addTimeWishes(
+  times: TimeWish[],
+  weekdays: string[],
+  from: string,
+  to: string,
+): TimeWish[] {
+  if (timeToMinutes(from) >= timeToMinutes(to)) {
+    return times;
+  }
+  const chosen = new Set(weekdays);
+  const added = WEEKDAYS.filter(
+    (weekday) =>
+      chosen.has(weekday) &&
+      // 同じ内容が既にあれば足さない（押し間違いで行が増えるのを防ぐ）
+      !times.some((time) => time.weekday === weekday && time.from === from && time.to === to),
+  ).map((weekday) => ({ weekday, from, to }));
+
+  return added.length === 0 ? times : [...times, ...added];
+}
 
 export type Opening = { weekday: string; from: string; to: string; ok: boolean };
 

@@ -491,6 +491,37 @@ tr.extrarow .namecol.pressing {
   font-weight: 600;
 }
 
+.chip.preset {
+  border-style: dashed;
+  color: #8fa0bf;
+}
+
+.chip.preset:hover {
+  color: #e6ebf5;
+}
+
+/* 曜日をまとめて選んで希望を足すところ */
+.bulk {
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #24304a;
+  border-radius: 8px;
+  background: #0d121c;
+}
+
+.bulk .chips {
+  margin-bottom: 8px;
+}
+
+.bulk .timerow {
+  margin-bottom: 0;
+}
+
+.bulk .add:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
 .timerow {
   display: flex;
   align-items: center;

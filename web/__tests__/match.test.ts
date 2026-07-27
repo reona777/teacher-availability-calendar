@@ -3,7 +3,14 @@ import { describe, expect, it } from "vitest";
 import type { Cell } from "../lib/grid";
 import { markKey, type Marks } from "../lib/marks";
 import type { Bunri, Profiles } from "../lib/profile";
-import { EMPTY_WISH, freeRuns, isBlankWish, matchTeachers, type Wish } from "../lib/match";
+import {
+  EMPTY_WISH,
+  addTimeWishes,
+  freeRuns,
+  isBlankWish,
+  matchTeachers,
+  type Wish,
+} from "../lib/match";
 
 function cell(teacher: string, weekday: string, start: string, end: string): Cell {
   return {
@@ -67,6 +74,64 @@ describe("freeRuns", () => {
 
   it("開始と終了が逆でも壊れない", () => {
     expect(freeRuns({ weekday: "火", from: "16:00", to: "14:00" }, new Set())).toEqual([]);
+  });
+});
+
+describe("addTimeWishes", () => {
+  it("選んだ曜日の数だけ希望が増える", () => {
+    expect(addTimeWishes([], ["月", "火", "水"], "18:00", "22:00")).toEqual([
+      { weekday: "月", from: "18:00", to: "22:00" },
+      { weekday: "火", from: "18:00", to: "22:00" },
+      { weekday: "水", from: "18:00", to: "22:00" },
+    ]);
+  });
+
+  it("選んだ順ではなく曜日の並びで足す", () => {
+    expect(addTimeWishes([], ["金", "月", "水"], "18:00", "22:00")).toEqual([
+      { weekday: "月", from: "18:00", to: "22:00" },
+      { weekday: "水", from: "18:00", to: "22:00" },
+      { weekday: "金", from: "18:00", to: "22:00" },
+    ]);
+  });
+
+  it("既にある希望は後ろに残し、増えた分だけを足す", () => {
+    const existing = [{ weekday: "土", from: "09:00", to: "12:00" }];
+    expect(addTimeWishes(existing, ["月"], "18:00", "22:00")).toEqual([
+      { weekday: "土", from: "09:00", to: "12:00" },
+      { weekday: "月", from: "18:00", to: "22:00" },
+    ]);
+  });
+
+  it("同じ曜日・同じ時間帯は二重に足さない", () => {
+    const existing = [{ weekday: "月", from: "18:00", to: "22:00" }];
+    expect(addTimeWishes(existing, ["月", "火"], "18:00", "22:00")).toEqual([
+      { weekday: "月", from: "18:00", to: "22:00" },
+      { weekday: "火", from: "18:00", to: "22:00" },
+    ]);
+  });
+
+  it("同じ曜日でも時間帯が違えば足す", () => {
+    const existing = [{ weekday: "月", from: "18:00", to: "22:00" }];
+    expect(addTimeWishes(existing, ["月"], "09:00", "12:00")).toEqual([
+      { weekday: "月", from: "18:00", to: "22:00" },
+      { weekday: "月", from: "09:00", to: "12:00" },
+    ]);
+  });
+
+  it("曜日を選んでいなければ何も足さない", () => {
+    const existing = [{ weekday: "月", from: "18:00", to: "22:00" }];
+    expect(addTimeWishes(existing, [], "09:00", "12:00")).toEqual(existing);
+  });
+
+  it("開始が終了以降なら何も足さない", () => {
+    expect(addTimeWishes([], ["月"], "22:00", "18:00")).toEqual([]);
+    expect(addTimeWishes([], ["月"], "18:00", "18:00")).toEqual([]);
+  });
+
+  it("表に出ない曜日は無視する", () => {
+    expect(addTimeWishes([], ["日", "月"], "18:00", "22:00")).toEqual([
+      { weekday: "月", from: "18:00", to: "22:00" },
+    ]);
   });
 });
 

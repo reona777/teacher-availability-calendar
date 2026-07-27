@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 
-import { WEEKDAYS } from "../lib/grid";
+import { WEEKDAYS, timeToMinutes } from "../lib/grid";
 import {
   EMPTY_WISH,
   LESSON_MINUTES,
+  addTimeWishes,
   isBlankWish,
   type MatchResult,
   type TimeWish,
@@ -19,11 +20,17 @@ const LESSON_LABEL: Record<number, string> = {
   120: "120分（中学生）",
 };
 
-/** 希望を1つ足すときの既定。表示中の曜日の、時間軸のまん中あたりから2コマ分。 */
-function defaultTime(weekday: string, times: string[]): TimeWish {
+/** よく使う曜日のまとまり。1つずつ押さずに済ませるための近道。 */
+const WEEKDAY_PRESETS: { label: string; weekdays: string[] }[] = [
+  { label: "平日", weekdays: ["月", "火", "水", "木", "金"] },
+  { label: "土", weekdays: ["土"] },
+  { label: "全部", weekdays: [...WEEKDAYS] },
+];
+
+/** 希望を足すときの既定の時間。時間軸のまん中あたりから2コマ分。 */
+function defaultRange(times: string[]): { from: string; to: string } {
   const start = Math.min(Math.floor(times.length / 2), Math.max(times.length - 3, 0));
   return {
-    weekday,
     from: times[start] ?? "18:00",
     to: times[Math.min(start + 2, times.length - 1)] ?? "19:00",
   };
@@ -49,6 +56,9 @@ export default function MatchPanel({
   onJump: (weekday: string) => void;
 }) {
   const [open, setOpen] = useState(false);
+  // まとめて追加するときの選択。表示中の曜日から始める。
+  const [days, setDays] = useState<string[]>([weekday]);
+  const [range, setRange] = useState(() => defaultRange(times));
   const searching = !isBlankWish(wish);
   const { candidates, dropped } = result;
   const total =
@@ -70,6 +80,10 @@ export default function MatchPanel({
     patch({
       times: wish.times.map((time, at) => (at === index ? { ...time, ...changes } : time)),
     });
+  }
+
+  function toggleDay(day: string) {
+    setDays(days.includes(day) ? days.filter((name) => name !== day) : [...days, day]);
   }
 
   if (!open) {
@@ -180,6 +194,63 @@ export default function MatchPanel({
         <span className="label">
           希望の時間帯（どれか1つでも1コマ分空いていれば候補にします）
         </span>
+
+        <div className="bulk">
+          <div className="chips">
+            {WEEKDAYS.map((day) => (
+              <button
+                key={day}
+                type="button"
+                className={days.includes(day) ? "chip on" : "chip"}
+                onClick={() => toggleDay(day)}
+              >
+                {day}
+              </button>
+            ))}
+            {WEEKDAY_PRESETS.map((preset) => (
+              <button
+                key={preset.label}
+                type="button"
+                className="chip preset"
+                onClick={() => setDays(preset.weekdays)}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+          <div className="timerow">
+            <select
+              value={range.from}
+              onChange={(event) => setRange({ ...range, from: event.target.value })}
+            >
+              {times.map((slot) => (
+                <option key={slot} value={slot}>
+                  {slot}
+                </option>
+              ))}
+            </select>
+            <span>〜</span>
+            <select
+              value={range.to}
+              onChange={(event) => setRange({ ...range, to: event.target.value })}
+            >
+              {times.map((slot) => (
+                <option key={slot} value={slot}>
+                  {slot}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              className="add"
+              disabled={days.length === 0 || timeToMinutes(range.from) >= timeToMinutes(range.to)}
+              onClick={() => patch({ times: addTimeWishes(wish.times, days, range.from, range.to) })}
+            >
+              選んだ曜日にまとめて追加
+            </button>
+          </div>
+        </div>
+
         {wish.times.map((time, index) => (
           <div key={index} className="timerow">
             <select
@@ -222,13 +293,6 @@ export default function MatchPanel({
             </button>
           </div>
         ))}
-        <button
-          type="button"
-          className="add"
-          onClick={() => patch({ times: [...wish.times, defaultTime(weekday, times)] })}
-        >
-          希望の時間帯を追加
-        </button>
       </div>
 
       {searching ? (
