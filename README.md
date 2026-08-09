@@ -92,10 +92,15 @@ npm run dev                          # http://localhost:3000
 
 ```bash
 cd web
-npm test          # vitest 132件
+npm test          # vitest 140件（8ファイル）
 npm run lint      # tsc --noEmit
 npm run build
 ```
+
+内訳は 判定ロジック `transform` 22件 / 画面の組み立て `grid` 22件 / 生徒マッチング `match` 40件 /
+講師プロフィール `profile` 17件 / 手入力の印 `marks` 14件・`marks-store` 10件 /
+追加講師 `extra` 10件 / 認証 `auth` 5件。
+**Salesforce に接続せずに全部通る**（判定ロジックを純関数に寄せてあるため）。
 
 注意: `npm run dev` を動かしたまま `npm run build` すると `.next` が壊れて 500 になる。
 その場合は dev を止めて `.next` を消してから再起動する。
@@ -103,7 +108,7 @@ npm run build
 ## デプロイ
 
 Vercel。Root Directory を `web` にして、上記の環境変数を設定する。
-`master` に push すると自動でデプロイされる。
+既定ブランチに push すると自動でデプロイされる。
 
 環境変数を足したら再デプロイが必要（middleware は Edge runtime でビルド時に取り込むため）。
 日次バッチや GitHub Actions は不要で、画面を開いた時点で取得し、更新ボタンで取り直す。
@@ -130,5 +135,8 @@ Vercel。Root Directory を `web` にして、上記の環境変数を設定す�
 このリポジトリは社内ツールの公開用コピーで、以下を実際の値から差し替えてある。
 
 - 講師名・組織名・Salesforce のテナントはすべて環境変数へ（コードには残していない）
-- テストに出てくる人名はすべて架空のもの
+- テストに出てくる人名・コース名はすべて架空のもの。
+  除外の判定は「未定」「当欠」で行うので、コース名を変えてもロジックには影響しない
 - 資格情報は元から環境変数で、リポジトリに含めたことはない
+
+機能は本体と同じ内容で、実運用側でも判定ロジックの変更は入っていない。

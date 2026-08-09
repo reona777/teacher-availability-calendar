@@ -13,7 +13,7 @@ import {
 const lesson = (over: Partial<LessonRecord> = {}): LessonRecord => ({
   MANAERP__Teacher__c: "田中 健太",
   MANAERP__Status__c: "Published",
-  Name: "[生徒]個別管理特訓S(英):指導枠",
+  Name: "[生徒]標準コースS(英):指導枠",
   MANAERP__Start_Date_Time__c: "2026-07-21T09:00:00.000+0000",
   MANAERP__End_Date_Time__c: "2026-07-21T10:00:00.000+0000",
   ...over,
@@ -73,11 +73,11 @@ describe("isExcluded", () => {
   });
 
   it("「未定」で始まる枠は除外", () => {
-    expect(isExcluded(lesson({ Name: "未定 個別管理特訓S" }))).toBe(true);
+    expect(isExcluded(lesson({ Name: "未定 標準コースS" }))).toBe(true);
   });
 
   it("「当欠」を含む枠は除外", () => {
-    expect(isExcluded(lesson({ Name: "[生徒]当欠 個別管理特訓" }))).toBe(true);
+    expect(isExcluded(lesson({ Name: "[生徒]当欠 標準コース" }))).toBe(true);
   });
 
   it("講師が空なら除外", () => {
@@ -153,7 +153,7 @@ describe("buildCells", () => {
       [
         at("2026-07-21", 9, 10, { MANAERP__Status__c: "Cancelled" }),
         at("2026-07-21", 9, 10, { MANAERP__Teacher__c: null }),
-        at("2026-07-21", 9, 10, { Name: "未定 個別管理特訓" }),
+        at("2026-07-21", 9, 10, { Name: "未定 標準コース" }),
         at("2026-07-21", 9, 10, { MANAERP__Teacher__c: "佐々木花子" }),
       ],
       rangeEnd,
