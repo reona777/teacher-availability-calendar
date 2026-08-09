@@ -7,7 +7,7 @@ import { excludedTeachers, normalizeTeacher } from "./transform";
 export type Bunri = "文系" | "理系";
 
 export type TeacherProfile = {
-  /** 空白を除いた講師名。特訓側のセルと同じキーになる。 */
+  /** 空白を除いた講師名。授業側のセルと同じキーになる。 */
   teacher: string;
   /** 科目マスタ名。重複を除いて名前順。 */
   subjects: string[];

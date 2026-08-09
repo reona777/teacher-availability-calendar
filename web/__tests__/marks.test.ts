@@ -38,7 +38,7 @@ describe("resolveMark", () => {
     expect(resolveMark(marks, "A", "火", "18:00", false)).toBe("ng");
   });
 
-  it("特訓が入っているセルでは印を出さない（Salesforceを優先する）", () => {
+  it("授業が入っているセルでは印を出さない（Salesforceを優先する）", () => {
     expect(resolveMark(marks, "A", "火", "18:00", true)).toBeNull();
   });
 

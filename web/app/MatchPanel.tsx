@@ -310,7 +310,7 @@ export default function MatchPanel({
           </p>
           {candidates.length === 0 ? (
             <p className="empty">
-              条件を緩めてください。特訓がまだ無い講師は、表に足して〇を付けると候補に入ります。
+              条件を緩めてください。授業がまだ無い講師は、表に足して〇を付けると候補に入ります。
             </p>
           ) : (
             <ol className="cands">

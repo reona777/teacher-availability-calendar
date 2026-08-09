@@ -95,14 +95,14 @@ describe("isExcluded", () => {
     expect(isExcluded(lesson({ MANAERP__Teacher__c: "佐々木花子" }))).toBe(false);
   });
 
-  it("通常の特訓は残す", () => {
+  it("通常の授業は残す", () => {
     expect(isExcluded(lesson())).toBe(false);
   });
 });
 
 describe("isTrial", () => {
-  it("特訓名に「体験」が入っていれば体験", () => {
-    expect(isTrial(lesson({ Name: "[生徒]体験特訓" }))).toBe(true);
+  it("授業名に「体験」が入っていれば体験", () => {
+    expect(isTrial(lesson({ Name: "[生徒]体験授業" }))).toBe(true);
     expect(isTrial(lesson())).toBe(false);
   });
 });
@@ -172,7 +172,7 @@ describe("buildCells", () => {
     const cells = buildCells(
       [
         at("2026-07-21", 9, 10),
-        at("2026-07-28", 9, 10, { Name: "[生徒]体験特訓" }),
+        at("2026-07-28", 9, 10, { Name: "[生徒]体験授業" }),
       ],
       rangeEnd,
     );

@@ -22,7 +22,7 @@ export type GridData = {
   cells: Cell[];
 };
 
-/** 表示する曜日。日曜は基本的に特訓が無いので扱わない。 */
+/** 表示する曜日。日曜は基本的に授業が無いので扱わない。 */
 export const WEEKDAYS = ["月", "火", "水", "木", "金", "土"] as const;
 
 /** Date#getDay() の並び（日曜始まり）。 */
@@ -77,7 +77,7 @@ export function buildTimeAxis(cells: Cell[], step = STEP_MINUTES): string[] {
   return axis;
 }
 
-/** その曜日に特訓がある講師を名前順で返す。 */
+/** その曜日に授業がある講師を名前順で返す。 */
 export function teachersOnWeekday(cells: Cell[], weekday: string): string[] {
   const names = new Set(
     cells.filter((cell) => cell.weekday === weekday).map((cell) => cell.teacher),
@@ -89,7 +89,7 @@ export type TeacherRow = { teacher: string; slots: (Cell | null)[]; extra: boole
 
 /**
  * 講師を縦、時間を横に並べるための行を作る。空いている時間は null。
- * `extraTeachers` は手で足した講師で、特訓が無いので空きだけの行として末尾に並べる。
+ * `extraTeachers` は手で足した講師で、授業が無いので空きだけの行として末尾に並べる。
  */
 export function buildTeacherRows(
   cells: Cell[],
@@ -117,7 +117,7 @@ export function buildTeacherRows(
     return { teacher, slots, extra: false };
   });
 
-  // 特訓が入った講師は通常の行で出るので、足した分からは落とす。
+  // 授業が入った講師は通常の行で出るので、足した分からは落とす。
   const known = new Set(scheduled);
   const added = Array.from(new Set(extraTeachers))
     .filter((teacher) => !known.has(teacher))

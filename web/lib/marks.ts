@@ -27,8 +27,8 @@ export function nextMark(current: MarkValue | null): MarkValue | null {
 
 /**
  * そのセルに表示する印を決める。
- * 特訓が入っている枠ではSalesforceを優先し、印は出さない
- * （更新して特訓が入れば、手で付けた印は自動的に隠れる）。
+ * 授業が入っている枠ではSalesforceを優先し、印は出さない
+ * （更新して授業が入れば、手で付けた印は自動的に隠れる）。
  */
 export function resolveMark(
   marks: Marks,

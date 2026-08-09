@@ -30,7 +30,7 @@ export async function setMark(
   revalidatePath("/");
 }
 
-/** 特訓が確定していない講師の行を、その曜日の表に足す・外す。 */
+/** 授業が確定していない講師の行を、その曜日の表に足す・外す。 */
 export async function setExtraTeacher(
   teacher: string,
   weekday: string,

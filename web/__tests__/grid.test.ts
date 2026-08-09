@@ -28,7 +28,7 @@ const cell = (over: Partial<Cell> = {}): Cell => ({
 });
 
 describe("WEEKDAYS", () => {
-  it("月〜土の6日（日曜は特訓が無いので扱わない）", () => {
+  it("月〜土の6日（日曜は授業が無いので扱わない）", () => {
     expect(WEEKDAYS).toEqual(["月", "火", "水", "木", "金", "土"]);
   });
 });
@@ -86,7 +86,7 @@ describe("buildTimeAxis", () => {
 });
 
 describe("teachersOnWeekday", () => {
-  it("その曜日に特訓がある講師だけを名前順で返す", () => {
+  it("その曜日に授業がある講師だけを名前順で返す", () => {
     const list = teachersOnWeekday(
       [
         cell({ teacher: "B", weekday: "火" }),
@@ -127,7 +127,7 @@ describe("buildTeacherRows", () => {
     expect(rows[1].slots).toEqual([null, null, null]);
   });
 
-  it("既に特訓がある講師は二重に出さない", () => {
+  it("既に授業がある講師は二重に出さない", () => {
     const rows = buildTeacherRows([cell({ teacher: "A" })], "火", axis, ["A"]);
     expect(rows).toHaveLength(1);
     expect(rows[0].extra).toBe(false);

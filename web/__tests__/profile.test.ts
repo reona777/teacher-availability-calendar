@@ -43,7 +43,7 @@ describe("buildProfiles", () => {
   });
 
   it("講師名の空白差を吸収して科目を突き合わせる", () => {
-    // Contact は「伊藤 大輔」、特訓側は「伊藤大輔」と実データで揺れている
+    // Contact は「伊藤 大輔」、授業側は「伊藤大輔」と実データで揺れている
     const profiles = buildProfiles(
       [contact("伊藤 大輔", "理系", "東京大学")],
       [eligible("伊藤大輔", "高校数学（ⅡB）"), eligible("伊藤 大輔", "高校英語")],

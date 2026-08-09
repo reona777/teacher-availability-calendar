@@ -92,19 +92,19 @@ describe("Redis保存（環境変数があるとき）", () => {
   it("HGETALL の配列形式を読める", async () => {
     const fetchMock = stubFetch(["A|火|18:00", "ng"]);
     expect(await loadMarks()).toEqual({ "A|火|18:00": "ng" });
-    expect(sentCommand(fetchMock)).toEqual(["HGETALL", "tokkun-calendar:marks"]);
+    expect(sentCommand(fetchMock)).toEqual(["HGETALL", "lesson-calendar:marks"]);
   });
 
   it("印の保存は HSET", async () => {
     const fetchMock = stubFetch(1);
     await saveMark("A|火|18:00", "ng");
-    expect(sentCommand(fetchMock)).toEqual(["HSET", "tokkun-calendar:marks", "A|火|18:00", "ng"]);
+    expect(sentCommand(fetchMock)).toEqual(["HSET", "lesson-calendar:marks", "A|火|18:00", "ng"]);
   });
 
   it("印の削除は HDEL", async () => {
     const fetchMock = stubFetch(1);
     await saveMark("A|火|18:00", null);
-    expect(sentCommand(fetchMock)).toEqual(["HDEL", "tokkun-calendar:marks", "A|火|18:00"]);
+    expect(sentCommand(fetchMock)).toEqual(["HDEL", "lesson-calendar:marks", "A|火|18:00"]);
   });
 
   it("トークンをAuthorizationヘッダで送る", async () => {

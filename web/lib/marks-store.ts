@@ -9,8 +9,8 @@ import { applyMark, fromRedisHash, sanitizeMarks, type MarkValue, type Marks } f
  * 本番は Vercel の Upstash Redis（環境変数が入る）。全員で同じ内容が見える。
  * 環境変数が無いローカル開発では `.data/` に書く（本番データを汚さないため）。
  */
-const REDIS_KEY = "tokkun-calendar:marks";
-const EXTRA_REDIS_KEY = "tokkun-calendar:extra";
+const REDIS_KEY = "lesson-calendar:marks";
+const EXTRA_REDIS_KEY = "teacher-availability-calendar:extra";
 const LOCAL_FILE = path.join(process.cwd(), ".data", "marks.json");
 const EXTRA_LOCAL_FILE = path.join(process.cwd(), ".data", "extras.json");
 

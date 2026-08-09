@@ -21,7 +21,7 @@ export default async function Page() {
     error = caught instanceof Error ? caught.message : String(caught);
   }
 
-  // 手で足した情報が読めなくても特訓の表は出す（読めなかったことは画面に出す）。
+  // 手で足した情報が読めなくても授業の表は出す（読めなかったことは画面に出す）。
   try {
     [marks, extras] = await Promise.all([loadMarks(), loadExtras()]);
   } catch (caught) {
@@ -32,7 +32,7 @@ export default async function Page() {
     <main>
       <header className="head">
         <div>
-          <h1>特訓カレンダー</h1>
+          <h1>授業カレンダー</h1>
           {process.env.SITE_NAME ? <p className="sub">{process.env.SITE_NAME}</p> : null}
         </div>
         <div className="meta">
@@ -56,7 +56,7 @@ export default async function Page() {
         <>
           <p className="legend">
             <span className="swatch busy" />
-            特訓あり
+            授業あり
             <span className="swatch trial" />
             体験
             <span className="swatch closing" />

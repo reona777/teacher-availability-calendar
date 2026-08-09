@@ -39,7 +39,7 @@ function lessonSoql(): string {
 
 /**
  * 在籍講師の名簿。Contactの拠点フィールドは運用上ほぼ空で絞りに使えないため、
- * 在籍状況と講師種別で絞っている（これで特訓を持つ講師と過不足なく一致する）。
+ * 在籍状況と講師種別で絞っている（これで授業を持つ講師と過不足なく一致する）。
  * 文理は `humanities_sciences_cd_t__c`。選択肢が 1/2/3 の
  * `Humanities_Science_Code__c` は名前が似ているだけの別物なので使わない。
  */
@@ -64,7 +64,7 @@ function jstNow(): Date {
   return new Date(Date.now() + JST_OFFSET_MS);
 }
 
-/** Contactの氏名を、特訓側の講師名と揃う形（空白除去）に直して並べる。 */
+/** Contactの氏名を、授業側の講師名と揃う形（空白除去）に直して並べる。 */
 function buildRoster(records: ContactRecord[]): string[] {
   const excluded = excludedTeachers();
   const names = new Set<string>();
@@ -110,7 +110,7 @@ async function fetchGrid(): Promise<GridData> {
  * Salesforceから週グリッドを取得する。
  * 毎回ログインすると重いので10分キャッシュし、更新ボタンでタグを無効化する。
  */
-export const getGrid = unstable_cache(fetchGrid, ["tokkun-grid"], {
+export const getGrid = unstable_cache(fetchGrid, ["lesson-grid"], {
   revalidate: 600,
   tags: [GRID_TAG],
 });

@@ -217,7 +217,7 @@ export default function WeekView({
         <p className="empty">
           {searching
             ? `${weekday}曜日に条件へ合う講師はいません。`
-            : `${weekday}曜日の特訓はありません。`}
+            : `${weekday}曜日の授業はありません。`}
         </p>
       ) : (
         <div className="scroll">
@@ -324,7 +324,7 @@ export default function WeekView({
       ) : null}
 
       <div className="addrow">
-        <label htmlFor="addteacher">特訓が入っていない講師を{weekday}曜に追加</label>
+        <label htmlFor="addteacher">授業が入っていない講師を{weekday}曜に追加</label>
         <select
           id="addteacher"
           value={pick}

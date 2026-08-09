@@ -13,7 +13,7 @@ const WEEKDAY_BY_INDEX = ["日", "月", "火", "水", "木", "金", "土"];
 const EXCLUDED_STATUSES = new Set(["Cancelled"]);
 
 /**
- * 一覧に出さない講師名。運用では社員（特訓の割当対象外）がこれにあたる。
+ * 一覧に出さない講師名。運用では社員（授業の割当対象外）がこれにあたる。
  * 実在の氏名なので、コードに書かず環境変数 `EXCLUDED_TEACHERS` からカンマ区切りで読む。
  */
 export function excludedTeachers(): Set<string> {
@@ -24,7 +24,7 @@ export function excludedTeachers(): Set<string> {
   return new Set(names);
 }
 
-/** 体験特訓の目印。Lesson_Type では判定できない（実データで体験特訓は0件）ため特訓名で見る。 */
+/** 体験授業の目印。Lesson_Type では判定できない（実データで体験授業は0件）ため授業名で見る。 */
 export const TRIAL_KEYWORD = "体験";
 
 /**
@@ -79,7 +79,7 @@ export function isExcluded(record: LessonRecord): boolean {
   return name.startsWith("未定") || name.includes("当欠");
 }
 
-/** 体験特訓か判定する。講師の時間は埋まるので除外はせず、表示で色を分ける。 */
+/** 体験授業か判定する。講師の時間は埋まるので除外はせず、表示で色を分ける。 */
 export function isTrial(record: LessonRecord): boolean {
   return (record.Name ?? "").includes(TRIAL_KEYWORD);
 }
@@ -94,7 +94,7 @@ type Group = {
 };
 
 /**
- * 特訓レコードを (講師, 曜日, 開始時刻) のセルへ集約する。
+ * 授業レコードを (講師, 曜日, 開始時刻) のセルへ集約する。
  * rangeEnd（取得範囲の最終日 YYYY-MM-DD）を越える場合は空き判定をしない。
  */
 export function buildCells(records: LessonRecord[], rangeEnd: string): Cell[] {

@@ -33,7 +33,7 @@ export default async function LoginPage({
 
   return (
     <main className="login">
-      <h1>特訓カレンダー</h1>
+      <h1>授業カレンダー</h1>
       {process.env.SITE_NAME ? <p className="sub">{process.env.SITE_NAME}</p> : null}
       {configured ? null : (
         <p className="error">SITE_PASSWORD が未設定です。環境変数を設定してください。</p>

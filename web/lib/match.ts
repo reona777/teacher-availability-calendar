@@ -94,7 +94,7 @@ export function isBlankWish(wish: Wish): boolean {
 
 /**
  * 希望の範囲のうち、続けて空いている区間を返す。
- * `blocked` は塞がっている時刻（特訓が入っている枠と、除外する×印の枠）。
+ * `blocked` は塞がっている時刻（授業が入っている枠と、除外する×印の枠）。
  */
 export function freeRuns(
   wish: TimeWish,
@@ -124,7 +124,7 @@ export function freeRuns(
   return runs;
 }
 
-/** その講師のその曜日で、特訓が入っている時刻。 */
+/** その講師のその曜日で、授業が入っている時刻。 */
 function busySlots(cells: Cell[], teacher: string, weekday: string): Set<string> {
   const slots = new Set<string>();
   for (const cell of cells) {
@@ -229,7 +229,7 @@ function findOpenings(
     const ok = markedSlots(marks, teacher, time, "ok");
     let blocked: Set<string>;
     if (scheduled) {
-      // 特訓がある講師は、入っていない時間を空きとみなす
+      // 授業がある講師は、入っていない時間を空きとみなす
       blocked = busySlots(cells, teacher, time.weekday);
       if (wish.excludeNg) {
         for (const slot of markedSlots(marks, teacher, time, "ng")) {
