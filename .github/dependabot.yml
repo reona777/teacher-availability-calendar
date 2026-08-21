@@ -1,0 +1,25 @@
+# 依存ライブラリの更新を自動で拾う設定。
+#
+# インターネットに出しているアプリは、後から見つかった脆弱性を放置すると
+# そこを突かれる。人手の定期チェックは忘れるので、PRが立つ形にしておく。
+#
+# ここで設定するのは定期更新のほう。既知の脆弱性が出たときの緊急PRは
+# リポジトリ設定の Dependabot security updates が別途受け持つ。
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/web"
+    schedule:
+      interval: "monthly"
+    # 1件ずつPRが立つと数が多くて放置しがちなので、まとめて1本にする。
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"
+    open-pull-requests-limit: 3
+    # メジャー更新はPRで受け取らない。まとめた中に混ざると塊が大きくなりすぎて、
+    # かえって手が出せず放置になる（実際に Next.js 16・TypeScript 7・ESLint 10 が
+    # 1本に入ったPRが立った）。上げるときは腰を据えて自分から取りにいく。
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
