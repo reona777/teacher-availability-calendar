@@ -1,15 +1,20 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 
 import { GRID_TAG } from "../lib/data";
 import { extraKey } from "../lib/extra";
 import { markKey, type MarkValue } from "../lib/marks";
 import { saveExtra, saveMark } from "../lib/marks-store";
 
-/** 更新ボタン: キャッシュを捨てて次の描画でSalesforceから取り直す。 */
+/**
+ * 更新ボタン: キャッシュを捨てて次の描画でSalesforceから取り直す。
+ *
+ * Next.js 16 の updateTag はその場で古い値を捨てるので、押した本人がすぐ新しい表を見る。
+ * 引数1つの revalidateTag と同じ挙動で、16 では非推奨になったこちらが後継。
+ */
 export async function refreshGrid(): Promise<void> {
-  revalidateTag(GRID_TAG);
+  updateTag(GRID_TAG);
 }
 
 /** 空き枠の「入れる／入れない」の印を保存する。value が null なら印を消す。 */

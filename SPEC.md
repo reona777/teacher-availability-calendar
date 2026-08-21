@@ -92,9 +92,10 @@ Salesforceには無い情報（「空いているが講師の都合で入れら�
   REST API で SOQL を実行する（ページング対応・読み取り専用）。
 - 資格情報: 本番は Vercel の環境変数、ローカルは `web/.env.local` を `lib/env.ts` が読む。
 - 更新: 表示時に取得して10分キャッシュ（タグ `grid`）。画面の更新ボタンが Server Action で
-  `revalidateTag` を呼び、次の描画で取り直す。日次バッチや外部Cronは使わない。
+  `updateTag` を呼び、次の描画で取り直す。日次バッチや外部Cronは使わない。
   （当初はPythonバッチが `grid.json` を生成する構成だったが、Vercel上でボタン更新できないため移行した）
-- 認証: middleware による共通パスワード（cookie にはハッシュを保存）。
+- 認証: proxy（Next.js 16 で middleware から改名。ランタイムは Node.js）による共通パスワード
+  （cookie にはハッシュを保存）。
 - 手動の印の保存先: Vercel の Upstash Redis に Hash（キー `lesson-calendar:marks`）で持つ。
   REST を fetch で叩くだけなので npm の依存は増やさない。フィールド単位（HSET/HDEL）で
   更新するため、複数人が同時に触っても他の印を巻き戻さない。
@@ -116,7 +117,7 @@ Salesforceには無い情報（「空いているが講師の都合で入れら�
 teacher-availability-calendar/
   SPEC.md / TASKS.md / README.md
   web/
-    middleware.ts          共通パスワード認証
+    proxy.ts               共通パスワード認証
     lib/
       salesforce.ts        SOAPログイン + REST でSOQL実行（ページング対応）
       transform.ts         JST変換・名寄せ・除外・体験判定・集計・空き算出（純関数）
@@ -130,7 +131,7 @@ teacher-availability-calendar/
       page.tsx             画面（サーバーコンポーネント）
       WeekView.tsx         曜日タブ + 講師×時間マトリクス + 印のクリック
       RefreshButton.tsx    更新ボタン
-      actions.ts           Server Action（revalidateTag / 印の保存）
+      actions.ts           Server Action（updateTag / 印の保存）
       login/page.tsx       パスワード入力
     __tests__/             transform / grid / marks / marks-store / auth のユニットテスト
 ```

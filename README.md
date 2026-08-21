@@ -46,8 +46,8 @@ Next.js（App Router）だけで完結し、サーバー側から直接 Salesfor
 - `web/lib/marks.ts` / `web/lib/extra.ts` … 手で足す情報のキー・切替・表示解決（純関数）
 - `web/lib/data.ts` … 取得とキャッシュ（10分 / タグ `grid`）
 - `web/lib/marks-store.ts` … 印と追加講師の保存。本番は Upstash Redis、ローカルは `.data/*.json`
-- `web/app/` … 画面。更新ボタンは Server Action で `revalidateTag` を呼ぶ
-- `web/middleware.ts` … 共通パスワードによる閲覧保護
+- `web/app/` … 画面。更新ボタンは Server Action で `updateTag` を呼ぶ
+- `web/proxy.ts` … 共通パスワードによる閲覧保護（Next.js 16 で middleware から改名）
 
 **判断ロジックはすべて純関数に寄せてある**（`lib/` の大半）。
 Salesforce と React から切り離してあるので、テストは実データ無しで書ける。
@@ -110,7 +110,7 @@ npm run build
 Vercel。Root Directory を `web` にして、上記の環境変数を設定する。
 既定ブランチに push すると自動でデプロイされる。
 
-環境変数を足したら再デプロイが必要（middleware は Edge runtime でビルド時に取り込むため）。
+環境変数を足したら再デプロイが必要。
 日次バッチや GitHub Actions は不要で、画面を開いた時点で取得し、更新ボタンで取り直す。
 
 ## Salesforce 側で分かったこと

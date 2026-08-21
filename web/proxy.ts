@@ -5,8 +5,10 @@ import { AUTH_COOKIE, sessionToken } from "./lib/auth";
 /**
  * 共通パスワードによる閲覧保護。
  * SITE_PASSWORD が未設定の場合は誰も通さない（誤って公開状態になるのを防ぐ）。
+ *
+ * Next.js 16 で middleware から proxy に名前が変わったもの（役割は同じ）。
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith("/login")) {
     return NextResponse.next();
   }
