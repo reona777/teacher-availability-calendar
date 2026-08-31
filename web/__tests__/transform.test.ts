@@ -108,6 +108,10 @@ describe("isTrial", () => {
 });
 
 describe("buildCells", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("講師名の表記揺れを1つのセルにまとめる", () => {
     const cells = buildCells(
       [
@@ -201,6 +205,45 @@ describe("buildCells", () => {
     const cell = cells.find((c) => c.teacher === "田中健太");
     expect(cell?.last_date).toBe("2026-08-06");
     expect(cell?.open_from).toBe("2026-08-20");
+  });
+
+  it("カンマで連結された講師名から名簿の講師だけを採る", () => {
+    // 講師名に「社員名,講師名」が実在する。素のままだと別人の行が立ち、
+    // 本人の行ではその枠が空きに見える。
+    vi.stubEnv("EXCLUDED_TEACHERS", "佐々木花子");
+    const cells = buildCells(
+      [at("2026-07-21", 9, 10, { MANAERP__Teacher__c: "佐々木花子,渡辺 拓海" })],
+      new Set(["渡辺拓海"]),
+    );
+    expect(cells).toHaveLength(1);
+    expect(cells[0].teacher).toBe("渡辺拓海");
+  });
+
+  it("校舎名と他校舎の講師しか残らない枠は出さない", () => {
+    // 「校舎名,他校舎の講師」。校舎名は名簿に無く、他校舎の講師は出さない。
+    vi.stubEnv("OTHER_LOCATION_PREFIXES", "別校舎");
+    const cells = buildCells(
+      [at("2026-07-21", 9, 10, { MANAERP__Teacher__c: "本校舎スクール,別校舎 佐藤みなみ" })],
+      new Set(["別校舎佐藤みなみ"]),
+    );
+    expect(cells).toEqual([]);
+  });
+
+  it("他校舎の講師は単独でも出さない", () => {
+    vi.stubEnv("OTHER_LOCATION_PREFIXES", "別校舎");
+    const cells = buildCells(
+      [at("2026-07-21", 9, 10, { MANAERP__Teacher__c: "別校舎 佐藤みなみ" })],
+      new Set(["別校舎佐藤みなみ"]),
+    );
+    expect(cells).toEqual([]);
+  });
+
+  it("連名で2人とも名簿にいれば両方の行に立てる", () => {
+    const cells = buildCells(
+      [at("2026-07-21", 9, 10, { MANAERP__Teacher__c: "田中 健太,渡辺拓海" })],
+      new Set(["田中健太", "渡辺拓海"]),
+    );
+    expect(cells.map((c) => c.teacher)).toEqual(["田中健太", "渡辺拓海"]);
   });
 
   it("通常の枠は trial が false", () => {

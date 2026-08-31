@@ -24,6 +24,26 @@ export function excludedTeachers(): Set<string> {
   return new Set(names);
 }
 
+/**
+ * 他校舎の講師。運用によっては Contact の氏名の先頭に校舎名が付く。
+ * 対象校舎の代講候補にはならないので、グリッドにも名簿にも出さない。
+ * 実在の校舎名なので、環境変数 `OTHER_LOCATION_PREFIXES` からカンマ区切りで読む。
+ */
+function otherLocationPrefixes(): string[] {
+  return (process.env.OTHER_LOCATION_PREFIXES ?? "")
+    .split(",")
+    .map((prefix) => prefix.trim())
+    .filter((prefix) => prefix !== "");
+}
+
+/** グリッドに出す講師か（除外指定の講師と他校舎の講師は出さない）。 */
+export function isDisplayedTeacher(name: string): boolean {
+  return (
+    !excludedTeachers().has(name) &&
+    !otherLocationPrefixes().some((prefix) => name.startsWith(prefix))
+  );
+}
+
 /** 体験授業の目印。Lesson_Type では判定できない（実データで体験授業は0件）ため授業名で見る。 */
 export const TRIAL_KEYWORD = "体験";
 
@@ -60,13 +80,36 @@ function jstDate(jst: Date): string {
   return jst.toISOString().slice(0, 10);
 }
 
-/** 表示対象外のレコードか判定する（キャンセル・講師空・社員・講師未定・当欠）。 */
-export function isExcluded(record: LessonRecord): boolean {
+/**
+ * 授業の担当講師。講師名には「校舎名,講師名」「社員名,講師名」のような
+ * **カンマ連結が実在する**。そのままだと別人として行が立ち、
+ * 本人の行ではその枠が空きに見える。
+ *
+ * カンマがあるときは名簿に載っている名前だけを採る（校舎名を落とすため）。
+ * 連名で2人とも在籍していれば2人とも埋まっているので、両方に立てる。
+ * 名簿を渡さない場合は分割せず、単独名としてそのまま扱う。
+ */
+export function resolveTeachers(
+  raw: string | null | undefined,
+  roster?: Set<string>,
+): string[] {
+  const parts = (raw ?? "")
+    .split(",")
+    .map(normalizeTeacher)
+    .filter((name): name is string => name !== null);
+  if (parts.length <= 1) {
+    return parts.filter(isDisplayedTeacher);
+  }
+  const known = roster ? parts.filter((name) => roster.has(name)) : parts;
+  return known.filter(isDisplayedTeacher);
+}
+
+/** 表示対象外のレコードか判定する（キャンセル・講師空・社員・他校舎・講師未定・当欠）。 */
+export function isExcluded(record: LessonRecord, roster?: Set<string>): boolean {
   if (EXCLUDED_STATUSES.has(record.MANAERP__Status__c ?? "")) {
     return true;
   }
-  const teacher = normalizeTeacher(record.MANAERP__Teacher__c);
-  if (teacher === null || excludedTeachers().has(teacher)) {
+  if (resolveTeachers(record.MANAERP__Teacher__c, roster).length === 0) {
     return true;
   }
   const name = record.Name ?? "";
@@ -95,20 +138,18 @@ type Group = {
  * 取得範囲の末尾が休講日に当たるとその曜日の全セルが一斉に「途中で終わる枠」になる。
  * 開催日は取得範囲内のレコードから作るので、範囲の終わりまで続く枠は自然に空き扱いにならない。
  */
-export function buildCells(records: LessonRecord[]): Cell[] {
+export function buildCells(records: LessonRecord[], roster?: Set<string>): Cell[] {
   const groups = new Map<string, Group>();
   const lessonDays = new Map<string, Set<string>>();
 
   for (const record of records) {
-    if (isExcluded(record)) {
+    if (isExcluded(record, roster)) {
       continue;
     }
-    const teacher = normalizeTeacher(record.MANAERP__Teacher__c) as string;
     const start = toJst(record.MANAERP__Start_Date_Time__c);
     const end = toJst(record.MANAERP__End_Date_Time__c);
     const weekday = jstWeekdayLabel(start);
     const startTime = jstTime(start);
-    const key = `${teacher}|${weekday}|${startTime}`;
 
     const days = lessonDays.get(weekday);
     if (days) {
@@ -117,19 +158,22 @@ export function buildCells(records: LessonRecord[]): Cell[] {
       lessonDays.set(weekday, new Set([jstDate(start)]));
     }
 
-    const group = groups.get(key);
-    if (group) {
-      group.days.push(jstDate(start));
-      group.trial = group.trial || isTrial(record);
-    } else {
-      groups.set(key, {
-        teacher,
-        weekday,
-        start: startTime,
-        end: jstTime(end),
-        days: [jstDate(start)],
-        trial: isTrial(record),
-      });
+    for (const teacher of resolveTeachers(record.MANAERP__Teacher__c, roster)) {
+      const key = `${teacher}|${weekday}|${startTime}`;
+      const group = groups.get(key);
+      if (group) {
+        group.days.push(jstDate(start));
+        group.trial = group.trial || isTrial(record);
+      } else {
+        groups.set(key, {
+          teacher,
+          weekday,
+          start: startTime,
+          end: jstTime(end),
+          days: [jstDate(start)],
+          trial: isTrial(record),
+        });
+      }
     }
   }
 
