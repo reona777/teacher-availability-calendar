@@ -9,7 +9,7 @@ import {
 import { querySalesforce } from "./salesforce";
 import {
   buildCells,
-  excludedTeachers,
+  isDisplayedTeacher,
   normalizeTeacher,
   type LessonRecord,
 } from "./transform";
@@ -66,11 +66,10 @@ function jstNow(): Date {
 
 /** Contactの氏名を、授業側の講師名と揃う形（空白除去）に直して並べる。 */
 function buildRoster(records: ContactRecord[]): string[] {
-  const excluded = excludedTeachers();
   const names = new Set<string>();
   for (const record of records) {
     const name = normalizeTeacher(record.Name);
-    if (name !== null && !excluded.has(name)) {
+    if (name !== null && isDisplayedTeacher(name)) {
       names.add(name);
     }
   }
@@ -92,7 +91,8 @@ async function fetchGrid(): Promise<GridData> {
   const now = jstNow();
   const from = now.toISOString().slice(0, 10);
   const to = addDays(now, RANGE_DAYS).toISOString().slice(0, 10);
-  const cells = buildCells(records);
+  const roster = buildRoster(contacts);
+  const cells = buildCells(records, new Set(roster));
 
   return {
     generated_at: `${now.toISOString().slice(0, 19)}+09:00`,
@@ -100,7 +100,7 @@ async function fetchGrid(): Promise<GridData> {
     teachers: Array.from(new Set(cells.map((cell) => cell.teacher))).sort((a, b) =>
       a.localeCompare(b, "ja"),
     ),
-    roster: buildRoster(contacts),
+    roster,
     profiles: buildProfiles(contacts, subjects),
     cells,
   };

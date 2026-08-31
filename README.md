@@ -84,6 +84,8 @@ npm run dev                          # http://localhost:3000
 - `SF_LOCATION` … 対象の校舎名（`MANAERP__Location__c` と完全一致）
 - `SITE_NAME` … 画面に出す組織名。未設定なら出さない
 - `EXCLUDED_TEACHERS` … 一覧に出さない講師名（カンマ区切り）
+- `OTHER_LOCATION_PREFIXES` … 他校舎の講師を見分ける氏名の接頭辞（カンマ区切り）。
+  Contactの氏名の先頭に校舎名が付く運用のとき、その講師をグリッドにも名簿にも出さない
 - `KV_REST_API_URL` / `KV_REST_API_TOKEN` … Upstash Redis。未設定ならローカルファイルに保存
 
 環境変数が既にあればそちらを優先し、無ければ `web/.env.local` を `lib/env.ts` が読む。
