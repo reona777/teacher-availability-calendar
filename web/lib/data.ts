@@ -92,7 +92,7 @@ async function fetchGrid(): Promise<GridData> {
   const now = jstNow();
   const from = now.toISOString().slice(0, 10);
   const to = addDays(now, RANGE_DAYS).toISOString().slice(0, 10);
-  const cells = buildCells(records, to);
+  const cells = buildCells(records);
 
   return {
     generated_at: `${now.toISOString().slice(0, 19)}+09:00`,

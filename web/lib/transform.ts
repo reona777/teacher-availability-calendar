@@ -60,12 +60,6 @@ function jstDate(jst: Date): string {
   return jst.toISOString().slice(0, 10);
 }
 
-function addDays(isoDate: string, days: number): string {
-  const date = new Date(`${isoDate}T00:00:00Z`);
-  date.setUTCDate(date.getUTCDate() + days);
-  return date.toISOString().slice(0, 10);
-}
-
 /** 表示対象外のレコードか判定する（キャンセル・講師空・社員・講師未定・当欠）。 */
 export function isExcluded(record: LessonRecord): boolean {
   if (EXCLUDED_STATUSES.has(record.MANAERP__Status__c ?? "")) {
@@ -95,10 +89,15 @@ type Group = {
 
 /**
  * 授業レコードを (講師, 曜日, 開始時刻) のセルへ集約する。
- * rangeEnd（取得範囲の最終日 YYYY-MM-DD）を越える場合は空き判定をしない。
+ *
+ * 空き開始日は「同じ曜日で**次に校舎が動いている日**」。単純に翌週(+7日)にすると、
+ * 休講日（長期休暇や行事で、その曜日に授業が1件も無い日）がそのまま空き開始日になり、
+ * 取得範囲の末尾が休講日に当たるとその曜日の全セルが一斉に「途中で終わる枠」になる。
+ * 開催日は取得範囲内のレコードから作るので、範囲の終わりまで続く枠は自然に空き扱いにならない。
  */
-export function buildCells(records: LessonRecord[], rangeEnd: string): Cell[] {
+export function buildCells(records: LessonRecord[]): Cell[] {
   const groups = new Map<string, Group>();
+  const lessonDays = new Map<string, Set<string>>();
 
   for (const record of records) {
     if (isExcluded(record)) {
@@ -110,6 +109,13 @@ export function buildCells(records: LessonRecord[], rangeEnd: string): Cell[] {
     const weekday = jstWeekdayLabel(start);
     const startTime = jstTime(start);
     const key = `${teacher}|${weekday}|${startTime}`;
+
+    const days = lessonDays.get(weekday);
+    if (days) {
+      days.add(jstDate(start));
+    } else {
+      lessonDays.set(weekday, new Set([jstDate(start)]));
+    }
 
     const group = groups.get(key);
     if (group) {
@@ -127,10 +133,14 @@ export function buildCells(records: LessonRecord[], rangeEnd: string): Cell[] {
     }
   }
 
+  const openDays = new Map(
+    Array.from(lessonDays, ([weekday, days]) => [weekday, Array.from(days).sort()]),
+  );
+
   return Array.from(groups.values())
     .map((group) => {
       const lastDate = group.days.reduce((a, b) => (a > b ? a : b));
-      const nextOccurrence = addDays(lastDate, 7);
+      const nextOpen = openDays.get(group.weekday)?.find((day) => day > lastDate);
       return {
         teacher: group.teacher,
         weekday: group.weekday,
@@ -138,7 +148,7 @@ export function buildCells(records: LessonRecord[], rangeEnd: string): Cell[] {
         end: group.end,
         count: group.days.length,
         last_date: lastDate,
-        open_from: nextOccurrence <= rangeEnd ? nextOccurrence : null,
+        open_from: nextOpen ?? null,
         trial: group.trial,
       };
     })

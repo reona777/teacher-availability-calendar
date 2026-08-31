@@ -108,15 +108,12 @@ describe("isTrial", () => {
 });
 
 describe("buildCells", () => {
-  const rangeEnd = "2026-09-21";
-
   it("講師名の表記揺れを1つのセルにまとめる", () => {
     const cells = buildCells(
       [
         at("2026-07-21", 9, 10, { MANAERP__Teacher__c: "山田 太郎" }),
         at("2026-07-28", 9, 10, { MANAERP__Teacher__c: "山田太郎" }),
       ],
-      rangeEnd,
     );
     expect(cells).toHaveLength(1);
     expect(cells[0].teacher).toBe("山田太郎");
@@ -124,25 +121,28 @@ describe("buildCells", () => {
   });
 
   it("JSTの曜日と時刻を持つ", () => {
-    const cells = buildCells([at("2026-07-21", 9, 10)], rangeEnd);
+    const cells = buildCells([at("2026-07-21", 9, 10)]);
     expect(cells[0].weekday).toBe("火");
     expect(cells[0].start).toBe("18:00");
     expect(cells[0].end).toBe("19:00");
   });
 
-  it("途中で終わる枠は次の同じ曜日が空き開始日になる", () => {
-    const cells = buildCells(
-      ["2026-07-21", "2026-07-28", "2026-08-04", "2026-08-11"].map((d) => at(d, 9, 10)),
-      rangeEnd,
-    );
-    expect(cells[0].last_date).toBe("2026-08-11");
-    expect(cells[0].open_from).toBe("2026-08-18");
+  it("途中で終わる枠は次に同じ曜日で授業がある日が空き開始日になる", () => {
+    const cells = buildCells([
+      ...["2026-07-21", "2026-07-28", "2026-08-04", "2026-08-11"].map((d) => at(d, 9, 10)),
+      // 校舎は火曜に動き続けている（別の講師の授業がある）
+      ...["2026-08-18", "2026-08-25"].map((d) =>
+        at(d, 10, 11, { MANAERP__Teacher__c: "渡辺 拓海" }),
+      ),
+    ]);
+    const cell = cells.find((c) => c.teacher === "田中健太");
+    expect(cell?.last_date).toBe("2026-08-11");
+    expect(cell?.open_from).toBe("2026-08-18");
   });
 
-  it("取得範囲を越えて続く枠は空き扱いにしない", () => {
+  it("取得範囲の終わりまで続く枠は空き扱いにしない", () => {
     const cells = buildCells(
       ["2026-09-08", "2026-09-15"].map((d) => at(d, 9, 10)),
-      rangeEnd,
     );
     expect(cells[0].open_from).toBeNull();
   });
@@ -156,14 +156,13 @@ describe("buildCells", () => {
         at("2026-07-21", 9, 10, { Name: "未定 標準コース" }),
         at("2026-07-21", 9, 10, { MANAERP__Teacher__c: "佐々木花子" }),
       ],
-      rangeEnd,
     );
     expect(cells).toEqual([]);
     vi.unstubAllEnvs();
   });
 
   it("時刻が違えば別のセル", () => {
-    const cells = buildCells([at("2026-07-21", 9, 10), at("2026-07-21", 10, 11)], rangeEnd);
+    const cells = buildCells([at("2026-07-21", 9, 10), at("2026-07-21", 10, 11)]);
     expect(cells).toHaveLength(2);
     expect(new Set(cells.map((c) => c.start))).toEqual(new Set(["18:00", "19:00"]));
   });
@@ -174,13 +173,37 @@ describe("buildCells", () => {
         at("2026-07-21", 9, 10),
         at("2026-07-28", 9, 10, { Name: "[生徒]体験授業" }),
       ],
-      rangeEnd,
     );
     expect(cells).toHaveLength(1);
     expect(cells[0].trial).toBe(true);
   });
 
+  it("校舎全体が休みの日は空き開始日にしない", () => {
+    // 土曜は 10/24 まで毎週あるが 10/31 は休講日で誰も授業が無い。
+    // 「翌週=空き」で判定すると土曜の全セルが一斉に「途中で終わる枠」になる。
+    const saturdays = ["2026-10-10", "2026-10-17", "2026-10-24"];
+    const cells = buildCells([
+      ...saturdays.map((d) => at(d, 9, 10)),
+      ...saturdays.map((d) => at(d, 10, 11, { MANAERP__Teacher__c: "渡辺 拓海" })),
+    ]);
+    expect(cells[0].last_date).toBe("2026-10-24");
+    expect(cells[0].open_from).toBeNull();
+  });
+
+  it("休講日を飛ばして次に授業がある日を空き開始日にする", () => {
+    // 木曜の 8/13 は休講。8/6 で終わる枠が空くのは 8/20 から。
+    const cells = buildCells([
+      at("2026-07-30", 9, 10),
+      at("2026-08-06", 9, 10),
+      at("2026-08-20", 9, 10, { MANAERP__Teacher__c: "渡辺 拓海" }),
+      at("2026-08-27", 9, 10, { MANAERP__Teacher__c: "渡辺 拓海" }),
+    ]);
+    const cell = cells.find((c) => c.teacher === "田中健太");
+    expect(cell?.last_date).toBe("2026-08-06");
+    expect(cell?.open_from).toBe("2026-08-20");
+  });
+
   it("通常の枠は trial が false", () => {
-    expect(buildCells([at("2026-07-21", 9, 10)], rangeEnd)[0].trial).toBe(false);
+    expect(buildCells([at("2026-07-21", 9, 10)])[0].trial).toBe(false);
   });
 });
