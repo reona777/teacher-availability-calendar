@@ -60,7 +60,7 @@ export default async function Page() {
             <span className="swatch trial" />
             体験
             <span className="swatch closing" />
-            途中で終わる枠（マウスを乗せると空き開始日）
+            途中で終わる枠（マウスを乗せると空き開始日と最終日）
             <span className="swatch free" />
             空き
             <span className="swatch ng">×</span>
