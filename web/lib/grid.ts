@@ -139,10 +139,18 @@ export function filterRows(rows: TeacherRow[], only: string[] | null): TeacherRo
   return rows.filter((row) => shown.has(row.teacher));
 }
 
-/** 空き開始日を「8/4〜空」の形に整える。 */
-export function formatOpenFrom(iso: string): string {
+/** ISO日付を「8/4」の形に縮める。 */
+export function formatDay(iso: string): string {
   const [, month, day] = iso.split("-");
-  return `${Number(month)}/${Number(day)}〜空`;
+  return `${Number(month)}/${Number(day)}`;
+}
+
+/**
+ * 途中で終わる枠の説明。日付を1つ出すだけだと最終日なのか空き開始日なのかが読み取れず、
+ * 結局いつから空くのかが分からない。空き開始日を先に言い切り、根拠として最終日を添える。
+ */
+export function formatClosing(lastDate: string, openFrom: string): string {
+  return `${formatDay(openFrom)}以降が空き（授業は${formatDay(lastDate)}まで）`;
 }
 
 /** 初期表示の曜日。日曜は表示しないので月曜へ寄せる。 */

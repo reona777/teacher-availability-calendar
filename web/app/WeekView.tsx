@@ -14,7 +14,7 @@ import {
   buildTeacherRows,
   buildTimeAxis,
   filterRows,
-  formatOpenFrom,
+  formatClosing,
   minutesToTime,
   teachersOnWeekday,
   timeToMinutes,
@@ -279,7 +279,7 @@ export default function WeekView({
                       const closing = cell.open_from ? " closing" : "";
                       const trial = cell.trial ? " trial" : "";
                       const openNote = cell.open_from
-                        ? ` / ${formatOpenFrom(cell.open_from)}`
+                        ? ` / ${formatClosing(cell.last_date, cell.open_from)}`
                         : "";
                       const trialNote = cell.trial ? " / 体験" : "";
                       return (

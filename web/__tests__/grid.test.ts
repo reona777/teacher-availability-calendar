@@ -5,7 +5,7 @@ import {
   buildTeacherRows,
   buildTimeAxis,
   filterRows,
-  formatOpenFrom,
+  formatClosing,
   minutesToTime,
   occupiedSlots,
   teachersOnWeekday,
@@ -166,9 +166,17 @@ describe("filterRows", () => {
   });
 });
 
-describe("formatOpenFrom", () => {
+describe("formatClosing", () => {
+  it("空き開始日を先に出し、根拠として最終日を添える", () => {
+    expect(formatClosing("2026-07-28", "2026-08-04")).toBe(
+      "8/4以降が空き（授業は7/28まで）",
+    );
+  });
+
   it("ゼロ埋めを外して M/D 表記にする", () => {
-    expect(formatOpenFrom("2026-08-04")).toBe("8/4〜空");
+    expect(formatClosing("2026-09-05", "2026-09-12")).toBe(
+      "9/12以降が空き（授業は9/5まで）",
+    );
   });
 });
 
