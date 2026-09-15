@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 
 import {
   MARK_LABEL,
+  MARK_TITLE,
   applyMark,
   fromRedisHash,
+  isMarkValue,
   markKey,
   nextMark,
   resolveMark,
@@ -17,17 +19,37 @@ describe("markKey", () => {
 });
 
 describe("nextMark", () => {
-  it("無印 → × → 〇 → 無印 の順に一巡する", () => {
+  it("無印 → × → 〇 → 他 → 無印 の順に一巡する", () => {
     expect(nextMark(null)).toBe("ng");
     expect(nextMark("ng")).toBe("ok");
-    expect(nextMark("ok")).toBeNull();
+    expect(nextMark("ok")).toBe("other");
+    expect(nextMark("other")).toBeNull();
   });
 });
 
 describe("MARK_LABEL", () => {
-  it("ngは×、okは〇", () => {
+  it("ngは×、okは〇、otherは他", () => {
     expect(MARK_LABEL.ng).toBe("×");
     expect(MARK_LABEL.ok).toBe("〇");
+    expect(MARK_LABEL.other).toBe("他");
+  });
+
+  it("セルは1文字しか入らないので、説明は別に持つ", () => {
+    expect(MARK_TITLE.other).toBe("他校舎の授業");
+  });
+});
+
+describe("isMarkValue", () => {
+  it("扱える印を通す", () => {
+    expect(isMarkValue("ng")).toBe(true);
+    expect(isMarkValue("ok")).toBe(true);
+    expect(isMarkValue("other")).toBe(true);
+  });
+
+  it("知らない値や文字列でないものは弾く", () => {
+    expect(isMarkValue("maybe")).toBe(false);
+    expect(isMarkValue(null)).toBe(false);
+    expect(isMarkValue(1)).toBe(false);
   });
 });
 
@@ -64,9 +86,18 @@ describe("applyMark", () => {
 });
 
 describe("sanitizeMarks", () => {
-  it("ng と ok だけを残す", () => {
-    const raw = { "A|火|18:00": "ng", "B|水|10:00": "ok", "C|木|11:00": "maybe" };
-    expect(sanitizeMarks(raw)).toEqual({ "A|火|18:00": "ng", "B|水|10:00": "ok" });
+  it("ng・ok・other だけを残す", () => {
+    const raw = {
+      "A|火|18:00": "ng",
+      "B|水|10:00": "ok",
+      "C|木|11:00": "maybe",
+      "D|金|20:00": "other",
+    };
+    expect(sanitizeMarks(raw)).toEqual({
+      "A|火|18:00": "ng",
+      "B|水|10:00": "ok",
+      "D|金|20:00": "other",
+    });
   });
 
   it("オブジェクトでなければ空にする", () => {

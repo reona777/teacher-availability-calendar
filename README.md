@@ -27,8 +27,12 @@ Salesforce に入っている授業データを読み取り、「講師 × 時�
 現場には「空いているが入れない」「ここなら入れる」のような、
 Salesforce に入っていない事情がある。これを画面から足せるようにした。
 
-- 空きセルのクリックで 無印 → ×（空いているが入れない）→ 〇（入れる）→ 無印
+- 空きセルのクリックで 無印 → ×（空いているが入れない）→ 〇（入れる）→ 他（他校舎の授業）→ 無印
 - 表の下のプルダウンで、まだ授業が確定していない在籍講師をその曜日に追加
+
+**「他」だけは「実際に埋まっている」印**として扱う。他校舎に所属する授業は、接続先の
+Salesforce（`SF_LOCATION` の校舎）からは1件も見えないのに、担当する講師はその時間に
+埋まっている。×は「入れない」という都合なので設定で無視できるが、他は無視できない。
 
 どちらも `(講師, 曜日, 時刻)` の週単位で全員に共有される。
 **描画時は常に Salesforce を優先する**ので、授業が入れば手で付けた印は隠れ、
@@ -43,7 +47,7 @@ Next.js（App Router）だけで完結し、サーバー側から直接 Salesfor
 - `web/lib/profile.ts` … 講師プロフィール（指導可能科目・文理・大学・学部）の組み立て（純関数）
 - `web/lib/match.ts` … 生徒の希望と空き枠の突き合わせ（純関数）
 - `web/lib/grid.ts` … 画面用の時間軸と講師行の組み立て（純関数）
-- `web/lib/marks.ts` / `web/lib/extra.ts` … 手で足す情報のキー・切替・表示解決（純関数）
+- `web/lib/marks.ts` / `web/lib/extra.ts` … 手で足す印と追加講師のキー・切替・表示解決（純関数）
 - `web/lib/data.ts` … 取得とキャッシュ（10分 / タグ `grid`）
 - `web/lib/marks-store.ts` … 印と追加講師の保存。本番は Upstash Redis、ローカルは `.data/*.json`
 - `web/app/` … 画面。更新ボタンは Server Action で `updateTag` を呼ぶ
@@ -94,13 +98,13 @@ npm run dev                          # http://localhost:3000
 
 ```bash
 cd web
-npm test          # vitest 140件（8ファイル）
+npm test          # vitest 153件（8ファイル）
 npm run lint      # tsc --noEmit
 npm run build
 ```
 
-内訳は 判定ロジック `transform` 22件 / 画面の組み立て `grid` 22件 / 生徒マッチング `match` 40件 /
-講師プロフィール `profile` 17件 / 手入力の印 `marks` 14件・`marks-store` 10件 /
+内訳は 判定ロジック `transform` 28件 / 画面の組み立て `grid` 23件 / 生徒マッチング `match` 43件 /
+講師プロフィール `profile` 17件 / 手入力の印 `marks` 17件・`marks-store` 10件 /
 追加講師 `extra` 10件 / 認証 `auth` 5件。
 **Salesforce に接続せずに全部通る**（判定ロジックを純関数に寄せてあるため）。
 

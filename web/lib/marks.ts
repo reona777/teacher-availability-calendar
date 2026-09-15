@@ -1,28 +1,48 @@
 /**
- * 手動で付ける「入れる／入れない」の印。
- * Salesforceには無い情報（講師から口頭で聞いた都合）を、空いている枠に手で書き足すためのもの。
+ * 手動で付ける印。
+ * Salesforceには無い情報（講師から口頭で聞いた都合や、他校舎で行う授業）を、
+ * 空いている枠に手で書き足すためのもの。
  * 粒度は (講師, 曜日, 時刻) の週テンプレートで、一度付ければ毎週その枠に出る。
  */
-export type MarkValue = "ng" | "ok";
+export type MarkValue = "ng" | "ok" | "other";
 
 export type Marks = Record<string, MarkValue>;
 
-/** ng=空いているが入れない / ok=入れると確認済み。 */
-export const MARK_LABEL: Record<MarkValue, string> = { ng: "×", ok: "〇" };
+/** ng=空いているが入れない / ok=入れると確認済み / other=他校舎の授業で埋まっている。 */
+export const MARK_LABEL: Record<MarkValue, string> = { ng: "×", ok: "〇", other: "他" };
 
-const MARK_VALUES = new Set<string>(["ng", "ok"]);
+/**
+ * マウスを乗せたときの説明。セルは34px幅で1文字しか入らないので、言葉はこちらで補う。
+ * 他校舎に所属する授業は、接続しているSalesforce（`SF_LOCATION` の校舎）からは
+ * 1件も見えないため、手で塞ぐ以外に表へ出す方法が無い。
+ */
+export const MARK_TITLE: Record<MarkValue, string> = {
+  ng: "入れない",
+  ok: "入れる",
+  other: "他校舎の授業",
+};
+
+const MARK_VALUES = new Set<string>(["ng", "ok", "other"]);
+
+/** 扱える印かどうか。保存前の検めと、壊れた保存値の除去に使う。 */
+export function isMarkValue(value: unknown): value is MarkValue {
+  return typeof value === "string" && MARK_VALUES.has(value);
+}
 
 /** 保存キー。区切りの `|` は講師名・曜日・時刻のどれにも現れない。 */
 export function markKey(teacher: string, weekday: string, slot: string): string {
   return `${teacher}|${weekday}|${slot}`;
 }
 
-/** クリックのたびに 無印 → × → 〇 → 無印 と一巡させる。 */
+/** クリックのたびに 無印 → × → 〇 → 他 → 無印 と一巡させる。 */
 export function nextMark(current: MarkValue | null): MarkValue | null {
   if (current === null) {
     return "ng";
   }
-  return current === "ng" ? "ok" : null;
+  if (current === "ng") {
+    return "ok";
+  }
+  return current === "ok" ? "other" : null;
 }
 
 /**
@@ -61,8 +81,8 @@ export function sanitizeMarks(raw: unknown): Marks {
   }
   const marks: Marks = {};
   for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
-    if (typeof value === "string" && MARK_VALUES.has(value)) {
-      marks[key] = value as MarkValue;
+    if (isMarkValue(value)) {
+      marks[key] = value;
     }
   }
   return marks;

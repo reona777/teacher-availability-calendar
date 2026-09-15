@@ -24,6 +24,7 @@ import { EMPTY_WISH, isBlankWish, matchTeachers, type Wish } from "../lib/match"
 import type { Profiles } from "../lib/profile";
 import {
   MARK_LABEL,
+  MARK_TITLE,
   applyMark,
   markKey,
   nextMark,
@@ -142,7 +143,7 @@ export default function WeekView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [weekday]);
 
-  /** 空き枠をクリックしたら 無印 → × → 〇 → 無印 と切り替えて保存する。 */
+  /** 空き枠をクリックしたら 無印 → × → 〇 → 他 → 無印 と切り替えて保存する。 */
   function toggleMark(teacher: string, slot: string) {
     const key = markKey(teacher, weekday, slot);
     const value = nextMark(shownMarks[key] ?? null);
@@ -264,7 +265,9 @@ export default function WeekView({
                         cell !== null,
                       );
                       if (!cell) {
-                        const markNote = mark ? `${MARK_LABEL[mark]} ` : "";
+                        const markNote = mark
+                          ? `${MARK_LABEL[mark]}=${MARK_TITLE[mark]} / `
+                          : "";
                         return (
                           <td
                             key={slot}

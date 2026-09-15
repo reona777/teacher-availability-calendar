@@ -266,6 +266,12 @@ describe("matchTeachers 時間の判定", () => {
       expect(result.candidates).toEqual([]);
     });
 
+    it("他を付けただけでは空きにならない（〇だけを見る扱いは変わらない）", () => {
+      const marks: Marks = { [markKey("中村結衣", "水", "14:00")]: "other" };
+      const result = matchTeachers({ ...added, marks, wish: wish({ times, lessonMinutes: 60 }) });
+      expect(result.candidates).toEqual([]);
+    });
+
     it("×を数える設定にしても、〇だけを見る扱いは変えない", () => {
       const marks: Marks = { [markKey("中村結衣", "水", "14:00")]: "ok" };
       const result = matchTeachers({
@@ -278,7 +284,7 @@ describe("matchTeachers 時間の判定", () => {
   });
 });
 
-describe("matchTeachers ×〇の印", () => {
+describe("matchTeachers ×〇他の印", () => {
   const cells = [cell("伊藤大輔", "火", "13:00", "14:00")];
   const base = {
     cells,
@@ -316,6 +322,29 @@ describe("matchTeachers ×〇の印", () => {
     });
     expect(result.candidates[0].hasOk).toBe(true);
     expect(result.candidates[0].openings[0].ok).toBe(true);
+  });
+
+  // 他校舎の授業は実際に入っている予定なので、×のように設定で無視できてはいけない
+  it("他の枠は×を数えない設定でも連続を切る", () => {
+    const marks: Marks = { [markKey("伊藤大輔", "火", "15:00")]: "other" };
+    const result = matchTeachers({
+      ...base,
+      marks,
+      wish: wish({ times, lessonMinutes: 90, excludeNg: false }),
+    });
+    expect(result.candidates).toEqual([]);
+  });
+
+  it("他の前後は空きとして残る", () => {
+    const marks: Marks = { [markKey("伊藤大輔", "火", "15:00")]: "other" };
+    const result = matchTeachers({
+      ...base,
+      marks,
+      wish: wish({ times, lessonMinutes: 60 }),
+    });
+    expect(result.candidates[0].openings).toEqual([
+      { weekday: "火", from: "14:00", to: "15:00", ok: false },
+    ]);
   });
 });
 

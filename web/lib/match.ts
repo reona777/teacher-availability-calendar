@@ -11,7 +11,7 @@ import {
   timeToMinutes,
   type Cell,
 } from "./grid";
-import { markKey, type Marks } from "./marks";
+import { markKey, type MarkValue, type Marks } from "./marks";
 import type { Bunri, Profiles } from "./profile";
 
 export type TimeWish = { weekday: string; from: string; to: string };
@@ -152,7 +152,7 @@ function markedSlots(
   marks: Marks,
   teacher: string,
   wish: TimeWish,
-  value: "ng" | "ok",
+  value: MarkValue,
   step = STEP_MINUTES,
 ): Set<string> {
   const slots = new Set<string>();
@@ -235,6 +235,11 @@ function findOpenings(
         for (const slot of markedSlots(marks, teacher, time, "ng")) {
           blocked.add(slot);
         }
+      }
+      // 他校舎の授業は実際に入っている予定なので、
+      // 「入れない」の×と違い、設定に関わらず埋まり扱いにする
+      for (const slot of markedSlots(marks, teacher, time, "other")) {
+        blocked.add(slot);
       }
     } else {
       // 手で足しただけの講師（デビュー前など）は空いている確証が無いので、

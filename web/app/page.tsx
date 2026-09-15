@@ -67,6 +67,8 @@ export default async function Page() {
             空いているが入れない
             <span className="swatch ok">〇</span>
             入れる
+            <span className="swatch other">他</span>
+            他校舎の授業で埋まっている
             <span className="note">空きセルをクリックで印を切替（全員に共有されます）</span>
           </p>
 

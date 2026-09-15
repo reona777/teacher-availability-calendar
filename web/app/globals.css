@@ -211,7 +211,7 @@ td.free {
 }
 
 /* 印が付いた枠は hover で色を消さない */
-table.matrix tbody tr:hover td.free:not(.ng):not(.ok) {
+table.matrix tbody tr:hover td.free:not(.ng):not(.ok):not(.other) {
   background: #141c2c;
 }
 
@@ -224,6 +224,12 @@ td.free.ng {
 td.free.ok {
   background: #172c24;
   color: #79d3a6;
+}
+
+/* 他校舎の授業（接続先のSalesforceから取れない）で埋まっている枠 */
+td.free.other {
+  background: #2b2440;
+  color: #b6a3f2;
 }
 
 td.busy {
@@ -257,7 +263,8 @@ td.busy.trial {
 }
 
 .swatch.ng,
-.swatch.ok {
+.swatch.ok,
+.swatch.other {
   width: auto;
   min-width: 16px;
   height: 16px;
@@ -275,6 +282,11 @@ td.busy.trial {
 .swatch.ok {
   background: #172c24;
   color: #79d3a6;
+}
+
+.swatch.other {
+  background: #2b2440;
+  color: #b6a3f2;
 }
 
 .note {

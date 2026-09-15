@@ -4,7 +4,7 @@ import { revalidatePath, updateTag } from "next/cache";
 
 import { GRID_TAG } from "../lib/data";
 import { extraKey } from "../lib/extra";
-import { markKey, type MarkValue } from "../lib/marks";
+import { isMarkValue, markKey, type MarkValue } from "../lib/marks";
 import { saveExtra, saveMark } from "../lib/marks-store";
 
 /**
@@ -28,7 +28,7 @@ export async function setMark(
   if (typeof teacher !== "string" || typeof weekday !== "string" || typeof slot !== "string") {
     throw new Error("印の指定が不正です");
   }
-  if (value !== null && value !== "ng" && value !== "ok") {
+  if (value !== null && !isMarkValue(value)) {
     throw new Error("印の値が不正です");
   }
   await saveMark(markKey(teacher, weekday, slot), value);
